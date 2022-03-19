@@ -21,3 +21,4 @@
 - [go-redis](github.com/go-redis/redis/v8)
 - [consul](https://github.com/hashicorp/consul)
 - [wire](github.com/google/wire)
+- [gorm](https://github.com/go-gorm/gorm)

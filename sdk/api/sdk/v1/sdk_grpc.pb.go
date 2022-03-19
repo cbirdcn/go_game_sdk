@@ -18,7 +18,10 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type SdkClient interface {
-	CheckEnter(ctx context.Context, in *CheckEnterRequest, opts ...grpc.CallOption) (*CheckEnterReply, error)
+	// 激活
+	InitSdk(ctx context.Context, in *InitSdkReq, opts ...grpc.CallOption) (*InitSdkReply, error)
+	// 验证进入游戏
+	CheckEnter(ctx context.Context, in *CheckEnterReq, opts ...grpc.CallOption) (*CommonReply, error)
 }
 
 type sdkClient struct {
@@ -29,8 +32,17 @@ func NewSdkClient(cc grpc.ClientConnInterface) SdkClient {
 	return &sdkClient{cc}
 }
 
-func (c *sdkClient) CheckEnter(ctx context.Context, in *CheckEnterRequest, opts ...grpc.CallOption) (*CheckEnterReply, error) {
-	out := new(CheckEnterReply)
+func (c *sdkClient) InitSdk(ctx context.Context, in *InitSdkReq, opts ...grpc.CallOption) (*InitSdkReply, error) {
+	out := new(InitSdkReply)
+	err := c.cc.Invoke(ctx, "/sdk.v1.Sdk/InitSdk", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *sdkClient) CheckEnter(ctx context.Context, in *CheckEnterReq, opts ...grpc.CallOption) (*CommonReply, error) {
+	out := new(CommonReply)
 	err := c.cc.Invoke(ctx, "/sdk.v1.Sdk/CheckEnter", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -42,7 +54,10 @@ func (c *sdkClient) CheckEnter(ctx context.Context, in *CheckEnterRequest, opts 
 // All implementations must embed UnimplementedSdkServer
 // for forward compatibility
 type SdkServer interface {
-	CheckEnter(context.Context, *CheckEnterRequest) (*CheckEnterReply, error)
+	// 激活
+	InitSdk(context.Context, *InitSdkReq) (*InitSdkReply, error)
+	// 验证进入游戏
+	CheckEnter(context.Context, *CheckEnterReq) (*CommonReply, error)
 	mustEmbedUnimplementedSdkServer()
 }
 
@@ -50,7 +65,10 @@ type SdkServer interface {
 type UnimplementedSdkServer struct {
 }
 
-func (UnimplementedSdkServer) CheckEnter(context.Context, *CheckEnterRequest) (*CheckEnterReply, error) {
+func (UnimplementedSdkServer) InitSdk(context.Context, *InitSdkReq) (*InitSdkReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method InitSdk not implemented")
+}
+func (UnimplementedSdkServer) CheckEnter(context.Context, *CheckEnterReq) (*CommonReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CheckEnter not implemented")
 }
 func (UnimplementedSdkServer) mustEmbedUnimplementedSdkServer() {}
@@ -66,8 +84,26 @@ func RegisterSdkServer(s grpc.ServiceRegistrar, srv SdkServer) {
 	s.RegisterService(&Sdk_ServiceDesc, srv)
 }
 
+func _Sdk_InitSdk_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(InitSdkReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SdkServer).InitSdk(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/sdk.v1.Sdk/InitSdk",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SdkServer).InitSdk(ctx, req.(*InitSdkReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Sdk_CheckEnter_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(CheckEnterRequest)
+	in := new(CheckEnterReq)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -79,7 +115,7 @@ func _Sdk_CheckEnter_Handler(srv interface{}, ctx context.Context, dec func(inte
 		FullMethod: "/sdk.v1.Sdk/CheckEnter",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(SdkServer).CheckEnter(ctx, req.(*CheckEnterRequest))
+		return srv.(SdkServer).CheckEnter(ctx, req.(*CheckEnterReq))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -91,6 +127,10 @@ var Sdk_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "sdk.v1.Sdk",
 	HandlerType: (*SdkServer)(nil),
 	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "InitSdk",
+			Handler:    _Sdk_InitSdk_Handler,
+		},
 		{
 			MethodName: "CheckEnter",
 			Handler:    _Sdk_CheckEnter_Handler,

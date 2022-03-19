@@ -18,35 +18,57 @@ var _ = binding.EncodeURL
 const _ = http.SupportPackageIsVersion1
 
 type SdkHTTPServer interface {
-	CheckEnter(context.Context, *CheckEnterRequest) (*CheckEnterReply, error)
+	CheckEnter(context.Context, *CheckEnterReq) (*CommonReply, error)
+	InitSdk(context.Context, *InitSdkReq) (*InitSdkReply, error)
 }
 
 func RegisterSdkHTTPServer(s *http.Server, srv SdkHTTPServer) {
 	r := s.Route("/")
+	r.POST("/sdk/init_sdk", _Sdk_InitSdk0_HTTP_Handler(srv))
 	r.POST("/sdk/check_enter", _Sdk_CheckEnter0_HTTP_Handler(srv))
 }
 
-func _Sdk_CheckEnter0_HTTP_Handler(srv SdkHTTPServer) func(ctx http.Context) error {
+func _Sdk_InitSdk0_HTTP_Handler(srv SdkHTTPServer) func(ctx http.Context) error {
 	return func(ctx http.Context) error {
-		var in CheckEnterRequest
+		var in InitSdkReq
 		if err := ctx.Bind(&in); err != nil {
 			return err
 		}
-		http.SetOperation(ctx, "/sdk.v1.Sdk/CheckEnter")
+		http.SetOperation(ctx, "/sdk.v1.Sdk/InitSdk")
 		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
-			return srv.CheckEnter(ctx, req.(*CheckEnterRequest))
+			return srv.InitSdk(ctx, req.(*InitSdkReq))
 		})
 		out, err := h(ctx, &in)
 		if err != nil {
 			return err
 		}
-		reply := out.(*CheckEnterReply)
+		reply := out.(*InitSdkReply)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _Sdk_CheckEnter0_HTTP_Handler(srv SdkHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in CheckEnterReq
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, "/sdk.v1.Sdk/CheckEnter")
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.CheckEnter(ctx, req.(*CheckEnterReq))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*CommonReply)
 		return ctx.Result(200, reply)
 	}
 }
 
 type SdkHTTPClient interface {
-	CheckEnter(ctx context.Context, req *CheckEnterRequest, opts ...http.CallOption) (rsp *CheckEnterReply, err error)
+	CheckEnter(ctx context.Context, req *CheckEnterReq, opts ...http.CallOption) (rsp *CommonReply, err error)
+	InitSdk(ctx context.Context, req *InitSdkReq, opts ...http.CallOption) (rsp *InitSdkReply, err error)
 }
 
 type SdkHTTPClientImpl struct {
@@ -57,11 +79,24 @@ func NewSdkHTTPClient(client *http.Client) SdkHTTPClient {
 	return &SdkHTTPClientImpl{client}
 }
 
-func (c *SdkHTTPClientImpl) CheckEnter(ctx context.Context, in *CheckEnterRequest, opts ...http.CallOption) (*CheckEnterReply, error) {
-	var out CheckEnterReply
+func (c *SdkHTTPClientImpl) CheckEnter(ctx context.Context, in *CheckEnterReq, opts ...http.CallOption) (*CommonReply, error) {
+	var out CommonReply
 	pattern := "/sdk/check_enter"
 	path := binding.EncodeURL(pattern, in, false)
 	opts = append(opts, http.Operation("/sdk.v1.Sdk/CheckEnter"))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, err
+}
+
+func (c *SdkHTTPClientImpl) InitSdk(ctx context.Context, in *InitSdkReq, opts ...http.CallOption) (*InitSdkReply, error) {
+	var out InitSdkReply
+	pattern := "/sdk/init_sdk"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation("/sdk.v1.Sdk/InitSdk"))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
 	if err != nil {

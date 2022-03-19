@@ -10,7 +10,15 @@ option java_package = "dev.kratos.api.sdk.v1";
 option java_outer_classname = "SdkProtoV1";
 
 service Sdk {
-  rpc CheckEnter (CheckEnterRequest) returns (CheckEnterReply) {
+  // 激活
+  rpc InitSdk (InitSdkReq) returns (InitSdkReply) {
+    option (google.api.http) = {
+      post: "sdk/api/v1/init_sdk"
+      body: "*"
+    };
+  }
+  // 验证进入游戏
+  rpc CheckEnter (CheckEnterReq) returns (CommonReply) {
     option (google.api.http) = {
       post: "/sdk/check_enter"
       body: "*"
@@ -18,13 +26,34 @@ service Sdk {
   }
 }
 
-message CheckEnterRequest {
+message CommonReply {
+  string data = 1;
+  string state = 2;
+}
+
+message InitSdkReq {
+  uint32 appId = 1;
+  string udid = 2;
+  uint32 channel = 3;
+  string sign = 4;
+}
+
+message InitSdkReply {
+  uint32 code = 1;
+  string msg = 2;
+//  string gameName = 3; // 暂不返回，因为要单独拿数据
+}
+
+
+
+
+message CheckEnterReq {
   uint32 appId = 1;
   string data = 2;
   string sign = 3;
 }
 
-message CheckEnterReply {
-  string data = 1;
-  string state = 2;
-}
+//message CheckEnterReply {
+//  string data = 1;
+//  string state = 2;
+//}

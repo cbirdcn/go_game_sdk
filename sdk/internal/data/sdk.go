@@ -7,9 +7,15 @@ import (
 	"github.com/go-kratos/kratos/v2/log"
 )
 
+// repo层：用于实现biz层中useCase抽象的方法
 type sdkRepo struct {
 	data *Data
 	log  *log.Helper
+}
+
+// useCase方法的实现：直接与DB数据打交道
+func (r *sdkRepo) GetPackageInfo(ctx context.Context, request *biz.InitSdkReq) (*biz.PackageInfoType, error) {
+	return getPackageInfo(ctx, r.data.rdb, request.Data.Channel)
 }
 
 // NewSdkRepo .
@@ -18,24 +24,4 @@ func NewSdkRepo(data *Data, logger log.Logger) biz.SdkRepo {
 		data: data,
 		log:  log.NewHelper(logger),
 	}
-}
-
-func (r *sdkRepo) Save(ctx context.Context, g *biz.Sdk) (*biz.Sdk, error) {
-	return g, nil
-}
-
-func (r *sdkRepo) Update(ctx context.Context, g *biz.Sdk) (*biz.Sdk, error) {
-	return g, nil
-}
-
-func (r *sdkRepo) FindByID(context.Context, int64) (*biz.Sdk, error) {
-	return nil, nil
-}
-
-func (r *sdkRepo) ListByHello(context.Context, string) ([]*biz.Sdk, error) {
-	return nil, nil
-}
-
-func (r *sdkRepo) ListAll(context.Context) ([]*biz.Sdk, error) {
-	return nil, nil
 }

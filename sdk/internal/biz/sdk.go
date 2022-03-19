@@ -13,33 +13,46 @@ var (
 	ErrUserNotFound = errors.NotFound(v1.ErrorReason_USER_NOT_FOUND.String(), "user not found")
 )
 
-// Sdk is a Sdk model.
-type Sdk struct {
-	Hello string
+
+// 数据模型，在多个文件使用
+type InitSdkReq struct {
+	AppId uint32
+	Data InitSdkReqDataType
+	Sign string
 }
 
-// SdkRepo is a Greater repo.
+type InitSdkReqDataType struct {
+	Udid string
+	Channel uint32
+}
+
+// redis tag 提供给data/redis.go做hmget scan 成 struct
+type PackageInfoType struct {
+	AdId uint32 `redis:"adId"`
+	ChannelId uint32 `redis:"channelId"`
+	SonChannel uint32 `redis:"sonChannel"`
+	ChannelGroup uint32 `redis:"channelGroup"`
+	IsBanReg bool `redis:"isBanReg"`
+	IsBanPay bool `redis:"isBanPay"`
+}
+
+// repo业务逻辑接口：在data中实现
 type SdkRepo interface {
-	Save(context.Context, *Sdk) (*Sdk, error)
-	Update(context.Context, *Sdk) (*Sdk, error)
-	FindByID(context.Context, int64) (*Sdk, error)
-	ListByHello(context.Context, string) ([]*Sdk, error)
-	ListAll(context.Context) ([]*Sdk, error)
+	GetPackageInfo(ctx context.Context, request *InitSdkReq) (*PackageInfoType, error)
 }
 
-// SdkUsecase is a Sdk usecase.
+// useCase，在service中注入后，可以调用useCase的方法
 type SdkUsecase struct {
 	repo SdkRepo
 	log  *log.Helper
 }
 
-// NewSdkUsecase new a Sdk usecase.
+// useCase创建实例
 func NewSdkUsecase(repo SdkRepo, logger log.Logger) *SdkUsecase {
 	return &SdkUsecase{repo: repo, log: log.NewHelper(logger)}
 }
 
-// CreateSdk creates a Sdk, and returns the new Sdk.
-func (uc *SdkUsecase) CreateSdk(ctx context.Context, g *Sdk) (*Sdk, error) {
-	uc.log.WithContext(ctx).Infof("CreateSdk: %v", g.Hello)
-	return uc.repo.Save(ctx, g)
+// useCase的方法：给service调用。内部调用repo的方法操作repo
+func (uc *SdkUsecase) GetPackageData(ctx context.Context, request *InitSdkReq) (*PackageInfoType, error) {
+	return uc.repo.GetPackageInfo(ctx, request)
 }
