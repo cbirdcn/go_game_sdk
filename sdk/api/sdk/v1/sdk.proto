@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+package sdk.v1;
+
+import "google/api/annotations.proto";
+
+option go_package = "sdk/api/sdk/v1;v1";
+option java_multiple_files = true;
+option java_package = "dev.kratos.api.sdk.v1";
+option java_outer_classname = "SdkProtoV1";
+
+service Sdk {
+  rpc CheckEnter (CheckEnterRequest) returns (CheckEnterReply) {
+    option (google.api.http) = {
+      post: "/sdk/check_enter"
+      body: "*"
+    };
+  }
+}
+
+message CheckEnterRequest {
+  uint32 appId = 1;
+  string data = 2;
+  string sign = 3;
+}
+
+message CheckEnterReply {
+  string data = 1;
+  string state = 2;
+}
