@@ -24,7 +24,7 @@ type SdkHTTPServer interface {
 
 func RegisterSdkHTTPServer(s *http.Server, srv SdkHTTPServer) {
 	r := s.Route("/")
-	r.POST("/sdk/init_sdk", _Sdk_InitSdk0_HTTP_Handler(srv))
+	r.POST("/sdk/api/v1/init_sdk", _Sdk_InitSdk0_HTTP_Handler(srv))
 	r.POST("/sdk/check_enter", _Sdk_CheckEnter0_HTTP_Handler(srv))
 }
 
@@ -94,7 +94,7 @@ func (c *SdkHTTPClientImpl) CheckEnter(ctx context.Context, in *CheckEnterReq, o
 
 func (c *SdkHTTPClientImpl) InitSdk(ctx context.Context, in *InitSdkReq, opts ...http.CallOption) (*InitSdkReply, error) {
 	var out InitSdkReply
-	pattern := "/sdk/init_sdk"
+	pattern := "/sdk/api/v1/init_sdk"
 	path := binding.EncodeURL(pattern, in, false)
 	opts = append(opts, http.Operation("/sdk.v1.Sdk/InitSdk"))
 	opts = append(opts, http.PathTemplate(pattern))

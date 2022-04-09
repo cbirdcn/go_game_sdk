@@ -5,6 +5,7 @@
 
 ## 进度
 - 初始化项目
+- 完成App激活功能：initSdk
 
 ## Tutorial
 1. 按照 [Kratos官方初始化](https://go-kratos.dev/docs/getting-started/start/) 方式安装kratos/v2
@@ -22,3 +23,11 @@
 - [consul](https://github.com/hashicorp/consul)
 - [wire](github.com/google/wire)
 - [gorm](https://github.com/go-gorm/gorm)
+- [ent](https://entgo.io/docs/getting-started)
+  
+## 功能说明
+- initSdk
+下载游戏后首次打开游戏，首先初始化sdk
+将udid、channel、cploginkey、appid，以及签名sign提交到服务器
+根据参数到redis查渠道包信息，判断是否新设备（7天内没有激活记录）
+写入激活记录到DB中(myx_log.active_records表)

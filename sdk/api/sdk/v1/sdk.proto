@@ -4,16 +4,17 @@ package sdk.v1;
 
 import "google/api/annotations.proto";
 
-option go_package = "sdk/api/sdk/v1;v1";
+option go_package = "api/sdk/v1;v1";
 option java_multiple_files = true;
 option java_package = "dev.kratos.api.sdk.v1";
 option java_outer_classname = "SdkProtoV1";
 
 service Sdk {
   // 激活
+  // 支持rpc与http
   rpc InitSdk (InitSdkReq) returns (InitSdkReply) {
     option (google.api.http) = {
-      post: "sdk/api/v1/init_sdk"
+      post: "/sdk/api/v1/init_sdk"
       body: "*"
     };
   }
@@ -31,11 +32,17 @@ message CommonReply {
   string state = 2;
 }
 
+//////下载激活sdk//////
+
 message InitSdkReq {
   uint32 appId = 1;
-  string udid = 2;
-  uint32 channel = 3;
-  string sign = 4;
+  InitSdkData data = 2;
+  string sign = 3;
+}
+
+message InitSdkData {
+  string udid = 1;
+  uint32 channel = 2;
 }
 
 message InitSdkReply {
@@ -44,8 +51,7 @@ message InitSdkReply {
 //  string gameName = 3; // 暂不返回，因为要单独拿数据
 }
 
-
-
+//////确认登录//////
 
 message CheckEnterReq {
   uint32 appId = 1;

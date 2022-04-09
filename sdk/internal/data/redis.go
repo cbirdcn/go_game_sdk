@@ -4,9 +4,7 @@ package data
 
 import (
 	"context"
-	"github.com/go-kratos/kratos/v2/errors"
 	"github.com/go-redis/redis/v8"
-	"github.com/google/uuid"
 	"sdk/internal/biz"
 	"strconv"
 )
@@ -18,11 +16,12 @@ func getPackageInfoKeyPrefix() string{
 }
 
 // function
-
-func getPackageInfo(ctx context.Context, rdb *redis.Client, channel uint32) (*biz.PackageInfoType, error) {
+// test data: hmset PACKAGE_INFO_CHANNEL_100 adId 1000001 channelId 100001 sonChannel 11000001 channelGroup 11 isBanReg false isBanPay false
+func getPackageInfo(ctx context.Context, rdb *redis.Client, channel uint32) (*biz.PackageInfo, error) {
 	// HMget、HGetAll、MGet可以通过Scan扫入Struct
-	var packageInfo biz.PackageInfoType
+	var packageInfo biz.PackageInfo
 	err := rdb.HMGet(ctx, getPackageInfoKeyPrefix() + strconv.Itoa(int(channel)),
+		"bid",
 		"adId",
 		"channelId",
 		"sonChannel",
