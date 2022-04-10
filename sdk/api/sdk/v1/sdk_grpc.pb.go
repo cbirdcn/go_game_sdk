@@ -19,6 +19,7 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type SdkClient interface {
 	// 激活
+	// 支持rpc与http
 	InitSdk(ctx context.Context, in *InitSdkReq, opts ...grpc.CallOption) (*InitSdkReply, error)
 	// 验证进入游戏
 	CheckEnter(ctx context.Context, in *CheckEnterReq, opts ...grpc.CallOption) (*CommonReply, error)
@@ -55,6 +56,7 @@ func (c *sdkClient) CheckEnter(ctx context.Context, in *CheckEnterReq, opts ...g
 // for forward compatibility
 type SdkServer interface {
 	// 激活
+	// 支持rpc与http
 	InitSdk(context.Context, *InitSdkReq) (*InitSdkReply, error)
 	// 验证进入游戏
 	CheckEnter(context.Context, *CheckEnterReq) (*CommonReply, error)

@@ -28,3 +28,12 @@ func IsSetActiveRecordFail(err error) bool {
 func ErrorSetActiveRecordFail(format string, args ...interface{}) *errors.Error {
 	return errors.New(500, ErrorReason_SetActiveRecordFail.String(), fmt.Sprintf(format, args...))
 }
+
+func IsSignNotMatch(err error) bool {
+	e := errors.FromError(err)
+	return e.Reason == ErrorReason_SignNotMatch.String() && e.Code == 403
+}
+
+func ErrorSignNotMatch(format string, args ...interface{}) *errors.Error {
+	return errors.New(403, ErrorReason_SignNotMatch.String(), fmt.Sprintf(format, args...))
+}

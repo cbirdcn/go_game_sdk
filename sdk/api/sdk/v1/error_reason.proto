@@ -12,4 +12,5 @@ enum ErrorReason {
   option (errors.default_code) = 500;
   OK = 0 [(errors.code) = 200];
   SetActiveRecordFail = 1 [(errors.code) = 500];
+  SignNotMatch = 2 [(errors.code) = 403];
 }

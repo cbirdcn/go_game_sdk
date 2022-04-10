@@ -2,9 +2,6 @@ package biz
 
 import (
 	"context"
-	"fmt"
-	"reflect"
-	"strings"
 
 	v1 "sdk/api/sdk/v1"
 
@@ -15,15 +12,17 @@ import (
 var (
 	// ErrUserNotFound is user not found.
 	ErrorSetActiveRecordFail = errors.InternalServer(v1.ErrorReason_SetActiveRecordFail.String(), "set active record fail")
+	ErrorSignNotMatch = errors.Forbidden(v1.ErrorReason_SignNotMatch.String(), "sign not match")
 )
 
 ///////数据结构，在多个文件使用///////
 
 // 将Req参数转成可以在多个模块间使用的不依赖Req参数的结构
 type InitSdkReq struct {
-	AppId uint32
-	Data  InitSdkReqDataType
-	Sign  string
+	Service string
+	AppId   uint32
+	Data    InitSdkReqDataType
+	Sign    string
 }
 
 type InitSdkReqDataType struct {
@@ -75,20 +74,6 @@ func NewSdkUsecase(repo SdkRepo, logger log.Logger) *SdkUsecase {
 }
 
 // useCase的方法：给service调用。内部调用repo的方法操作repo
-
-// TODO:
-func HttpBuildQuery(request *InitSdkReq) (param_str string) {
-	return ""
-}
-
-// TODO:
-func (uc *SdkUsecase) CheckSign(ctx context.Context, request *InitSdkReq) (bool, error) {
-	// 请求签名方式：appid + service_name + data字符串 + login_key
-	// service_name可以是sdk.game.initsdk或其他
-	// login_key是后台给每个游戏配置的唯一秘钥
-	// data字符串结构：url.QueryEscape(param1=a&param2=b)
-	return true, nil
-}
 
 func (uc *SdkUsecase) GetPackageData(ctx context.Context, request *InitSdkReq) (*PackageInfo, error) {
 	return uc.repo.GetPackageInfo(ctx, request)

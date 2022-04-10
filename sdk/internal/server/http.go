@@ -10,10 +10,11 @@ import (
 )
 
 // NewHTTPServer new a HTTP server.
-func NewHTTPServer(c *conf.Server, greeter *service.SdkService, logger log.Logger) *http.Server {
+func NewHTTPServer(c *conf.Server, sdk *service.SdkService, logger log.Logger) *http.Server {
 	var opts = []http.ServerOption{
 		http.Middleware(
 			recovery.Recovery(),
+			MiddlewareCheckSign(),
 		),
 	}
 	if c.Http.Network != "" {
@@ -26,6 +27,6 @@ func NewHTTPServer(c *conf.Server, greeter *service.SdkService, logger log.Logge
 		opts = append(opts, http.Timeout(c.Http.Timeout.AsDuration()))
 	}
 	srv := http.NewServer(opts...)
-	v1.RegisterSdkHTTPServer(srv, greeter)
+	v1.RegisterSdkHTTPServer(srv, sdk)
 	return srv
 }

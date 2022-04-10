@@ -35,9 +35,10 @@ message CommonReply {
 //////下载激活sdk//////
 
 message InitSdkReq {
-  uint32 appId = 1;
-  InitSdkData data = 2;
-  string sign = 3;
+  string service = 1;
+  uint32 appId = 2;
+  InitSdkData data = 3;
+  string sign = 4;
 }
 
 message InitSdkData {
