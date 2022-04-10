@@ -3,6 +3,7 @@ package data
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	// "fmt"
 	"time"
@@ -33,7 +34,7 @@ func NewSdkRepo(data *Data, logger log.Logger) biz.SdkRepo {
 
 // 获取redis中包信息
 func (r *sdkRepo) GetPackageInfo(ctx context.Context, request *biz.InitSdkReq) (*biz.PackageInfo, error) {
-	return getPackageInfo(ctx, r.data.rdb, request.Data.Channel)
+	return hotGetPackageInfo(ctx, r.data.rdb, request.Data.Channel)
 }
 
 // deprecated：ent的实现方式不能支持自定义主键名称。改用gorm
@@ -112,4 +113,23 @@ func (r *sdkRepo) SetActiveRecord(ctx context.Context, request *biz.InitSdkReq) 
 		return true,nil
 	}
 	return false,res.Error
+}
+
+func (r *sdkRepo) GetGameInfo(ctx context.Context, appId uint32) (*biz.GameInfo, error) {
+	var game *biz.Game
+	hotInfo, err := hotGetGameInfo(ctx, r.data.rdb, appId)
+	if hotInfo.GameId != 0 && err == nil {
+		return hotInfo, err
+	}
+	
+	res := r.data.db.Where("gameId = ?", appId).Limit(1).Find(&game)
+	if res.RowsAffected == 1 {
+		if hotSetGameInfo(ctx, r.data.rdb, appId, game) {
+			hotInfo, err := hotGetGameInfo(ctx, r.data.rdb, appId)
+			if hotInfo.GameId != 0 && err == nil {
+				return hotInfo, err
+			}
+		}
+	}
+	return nil, errors.New("can't get game info")
 }

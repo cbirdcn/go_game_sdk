@@ -11,24 +11,24 @@ import (
 	"sort"
 	"strconv"
 
+	"sdk/internal/service"
+
 	"github.com/go-kratos/kratos/v2/middleware"
 	"github.com/go-kratos/kratos/v2/transport"
 )
 
-func MiddlewareCheckSign() middleware.Middleware {
+func MiddlewareCheckSign(sdk *service.SdkService) middleware.Middleware {
 	return func(handler middleware.Handler) middleware.Handler {
 		return func(ctx context.Context, req interface{}) (reply interface{}, err error) {
 			if _, ok := transport.FromServerContext(ctx); ok {
 				// Do something on entering
-				fmt.Println(1)
 				// 中间件验证签名
-				if !CheckSign(req) {
+				if !CheckSign(ctx, req, sdk) {
 					return nil, v1.ErrorSignNotMatch("sign not match")
 				}
 
 				defer func() {
 					// Do something on exiting
-					fmt.Println(2)
 				}()
 			}
 			return handler(ctx, req)
@@ -41,14 +41,14 @@ func MiddlewareCheckSign() middleware.Middleware {
 // service_name可以是sdk.game.initsdk或其他
 // data字符串结构：url.QueryEscape(param1=a&param2=b)
 // login_key是后台给每个游戏配置的唯一秘钥
-func CheckSign(req interface{}) bool {
+func CheckSign(ctx context.Context, req interface{}, sdk *service.SdkService) bool {
 	// 将interface的参数转成map
 	reqJson, _ := json.Marshal(req)
 	var reqMap map[string]interface{}
 	json.Unmarshal([]byte(reqJson), &reqMap)
 
 	dataStr := HttpBuildQuery(reqMap)
-	makeSign := MakeSign(reqMap, dataStr)
+	makeSign := MakeSign(ctx, reqMap, dataStr, sdk)
 
 	if fmt.Sprintf("%v", reqMap["sign"]) == makeSign {
 		return true
@@ -87,12 +87,32 @@ func HttpBuildQuery(reqMap map[string]interface{}) string {
 }
 
 // 根据map生成签名
-func MakeSign(reqMap map[string]interface{}, dataStr string) (signStr string) {
+// 当cpLoginKey=b5d6ad09709d5eac958e8fb8ad511c76时，数据和签名如下：
+// {
+//   "service": "sdk.game.initsdk",
+//   "appId": 1000000,
+//   "data": {
+//     "udid": "12-34-56-78-9100",
+//     "channel": 1000001
+//   },
+//   "sign": "ad4522e0fcad8c671d679e0e19c75968"
+// }
+func MakeSign(ctx context.Context, reqMap map[string]interface{}, dataStr string, sdk *service.SdkService) (signStr string) {
 	// uint32参数会被req转成float64
 	signStr += fmt.Sprintf("%s", strconv.FormatFloat(reqMap["appId"].(float64), 'f', -1, 64))
 	signStr += fmt.Sprintf("%s", reqMap["service"])
 	signStr += dataStr
-	signStr += "8a706e870f7afd73411b23e626440365" // TODO: 从db/cache获取
+	// signStr += "b5d6ad09709d5eac958e8fb8ad511c76" // TODO: 从db/cache获取
+	cpLoginKey, err := GetLoginKey(ctx, reqMap, sdk)
+
+	if err != nil {
+		panic("game unavailable.")
+	}
+	signStr += cpLoginKey
 	return fmt.Sprintf("%x", md5.Sum([]byte(signStr)))
 }
 
+func GetLoginKey(ctx context.Context, reqMap map[string]interface{}, sdk *service.SdkService) (string, error) {
+	res, err := sdk.GetGameInfo(ctx, uint32(reqMap["appId"].(float64)))
+	return res.CpLoginKey, err
+}

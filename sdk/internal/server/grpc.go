@@ -14,7 +14,7 @@ func NewGRPCServer(c *conf.Server, sdk *service.SdkService, logger log.Logger) *
 	var opts = []grpc.ServerOption{
 		grpc.Middleware(
 			recovery.Recovery(),
-			MiddlewareCheckSign(),
+			MiddlewareCheckSign(sdk),
 		),
 	}
 	if c.Grpc.Network != "" {

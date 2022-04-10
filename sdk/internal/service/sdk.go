@@ -52,3 +52,8 @@ func (s *SdkService) InitSdk(ctx context.Context, req *v1.InitSdkReq) (*v1.InitS
 	}
 
 }
+
+// 获取GameInfo（Cache或DB）
+func (s *SdkService) GetGameInfo(ctx context.Context, appId uint32) (*biz.GameInfo, error) {
+	return s.uc.GetGameData(ctx, appId)
+}

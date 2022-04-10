@@ -8,7 +8,7 @@ server:
 data:
   database:
     driver: mysql
-    source: root:root@tcp(host.docker.internal:3306)/myx_log
+    source: root:root@tcp(host.docker.internal:3306)/game_sdk
   redis:
     addr: host.docker.internal:6379
     read_timeout: 0.2s

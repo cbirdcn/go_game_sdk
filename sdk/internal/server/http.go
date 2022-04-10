@@ -14,7 +14,7 @@ func NewHTTPServer(c *conf.Server, sdk *service.SdkService, logger log.Logger) *
 	var opts = []http.ServerOption{
 		http.Middleware(
 			recovery.Recovery(),
-			MiddlewareCheckSign(),
+			MiddlewareCheckSign(sdk),
 		),
 	}
 	if c.Http.Network != "" {
