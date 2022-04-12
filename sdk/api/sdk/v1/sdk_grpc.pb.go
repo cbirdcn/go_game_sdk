@@ -21,6 +21,10 @@ type SdkClient interface {
 	// 激活
 	// 支持rpc与http
 	InitSdk(ctx context.Context, in *InitSdkReq, opts ...grpc.CallOption) (*InitSdkReply, error)
+	// 用户名注册
+	Reg(ctx context.Context, in *RegReq, opts ...grpc.CallOption) (*RegReply, error)
+	// 用户名登录
+	Login(ctx context.Context, in *LoginReq, opts ...grpc.CallOption) (*LoginReply, error)
 	// 验证进入游戏
 	CheckEnter(ctx context.Context, in *CheckEnterReq, opts ...grpc.CallOption) (*CommonReply, error)
 }
@@ -36,6 +40,24 @@ func NewSdkClient(cc grpc.ClientConnInterface) SdkClient {
 func (c *sdkClient) InitSdk(ctx context.Context, in *InitSdkReq, opts ...grpc.CallOption) (*InitSdkReply, error) {
 	out := new(InitSdkReply)
 	err := c.cc.Invoke(ctx, "/sdk.v1.Sdk/InitSdk", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *sdkClient) Reg(ctx context.Context, in *RegReq, opts ...grpc.CallOption) (*RegReply, error) {
+	out := new(RegReply)
+	err := c.cc.Invoke(ctx, "/sdk.v1.Sdk/Reg", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *sdkClient) Login(ctx context.Context, in *LoginReq, opts ...grpc.CallOption) (*LoginReply, error) {
+	out := new(LoginReply)
+	err := c.cc.Invoke(ctx, "/sdk.v1.Sdk/Login", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -58,6 +80,10 @@ type SdkServer interface {
 	// 激活
 	// 支持rpc与http
 	InitSdk(context.Context, *InitSdkReq) (*InitSdkReply, error)
+	// 用户名注册
+	Reg(context.Context, *RegReq) (*RegReply, error)
+	// 用户名登录
+	Login(context.Context, *LoginReq) (*LoginReply, error)
 	// 验证进入游戏
 	CheckEnter(context.Context, *CheckEnterReq) (*CommonReply, error)
 	mustEmbedUnimplementedSdkServer()
@@ -69,6 +95,12 @@ type UnimplementedSdkServer struct {
 
 func (UnimplementedSdkServer) InitSdk(context.Context, *InitSdkReq) (*InitSdkReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method InitSdk not implemented")
+}
+func (UnimplementedSdkServer) Reg(context.Context, *RegReq) (*RegReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Reg not implemented")
+}
+func (UnimplementedSdkServer) Login(context.Context, *LoginReq) (*LoginReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Login not implemented")
 }
 func (UnimplementedSdkServer) CheckEnter(context.Context, *CheckEnterReq) (*CommonReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CheckEnter not implemented")
@@ -104,6 +136,42 @@ func _Sdk_InitSdk_Handler(srv interface{}, ctx context.Context, dec func(interfa
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Sdk_Reg_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RegReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SdkServer).Reg(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/sdk.v1.Sdk/Reg",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SdkServer).Reg(ctx, req.(*RegReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Sdk_Login_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(LoginReq)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(SdkServer).Login(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/sdk.v1.Sdk/Login",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(SdkServer).Login(ctx, req.(*LoginReq))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Sdk_CheckEnter_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(CheckEnterReq)
 	if err := dec(in); err != nil {
@@ -132,6 +200,14 @@ var Sdk_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "InitSdk",
 			Handler:    _Sdk_InitSdk_Handler,
+		},
+		{
+			MethodName: "Reg",
+			Handler:    _Sdk_Reg_Handler,
+		},
+		{
+			MethodName: "Login",
+			Handler:    _Sdk_Login_Handler,
 		},
 		{
 			MethodName: "CheckEnter",

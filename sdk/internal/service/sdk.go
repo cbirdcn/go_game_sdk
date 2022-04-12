@@ -57,3 +57,33 @@ func (s *SdkService) InitSdk(ctx context.Context, req *v1.InitSdkReq) (*v1.InitS
 func (s *SdkService) GetGameInfo(ctx context.Context, appId uint32) (*biz.GameInfo, error) {
 	return s.uc.GetGameData(ctx, appId)
 }
+
+// 
+func (s *SdkService) Reg(ctx context.Context, req *v1.RegReq) (*v1.RegReply, error) {
+	RegReq := &biz.RegReq{
+		Service: req.Service,
+		AppId:   req.AppId,
+		Data: biz.RegReqDataType{
+			Username: req.Data.Username,
+			Passwd: req.Data.Passwd,
+			Udid: req.Data.Udid,
+			Channel: req.Data.Channel,
+		},
+		Sign: req.Sign,
+	}
+	// 调用usecase的方法，写入格式化的数据到DB。
+	// 具体逻辑由useCase声明并交给data实现，service这里只处理调用和返回。
+	res, err := s.uc.RegByUsername(ctx, RegReq)
+
+	if res {
+		return &v1.RegReply{
+			Code: 0,
+			Msg:  "ok",
+		}, err
+	} else {
+		return &v1.RegReply{
+			Code: 1,
+			Msg:  "reg by username failed",
+		}, biz.ErrorRegByUsernameFail
+	}
+}

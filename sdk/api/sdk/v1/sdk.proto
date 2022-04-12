@@ -18,10 +18,24 @@ service Sdk {
       body: "*"
     };
   }
+  // 用户名注册
+  rpc Reg (RegReq) returns (RegReply) {
+    option (google.api.http) = {
+      post: "/sdk/api/v1/reg"
+      body: "*"
+    };
+  }
+  // 用户名登录
+  rpc Login (LoginReq) returns (LoginReply) {
+    option (google.api.http) = {
+      post: "/sdk/api/v1/login"
+      body: "*"
+    };
+  }
   // 验证进入游戏
   rpc CheckEnter (CheckEnterReq) returns (CommonReply) {
     option (google.api.http) = {
-      post: "/sdk/check_enter"
+      post: "/sdk/api/v1/check_enter"
       body: "*"
     };
   }
@@ -32,16 +46,16 @@ message CommonReply {
   string state = 2;
 }
 
-//////下载激活sdk//////
+//////下载激活sdk:sdk.game.initsdk//////
 
 message InitSdkReq {
   string service = 1;
   uint32 appId = 2;
-  InitSdkData data = 3;
+  InitSdkRegData data = 3;
   string sign = 4;
 }
 
-message InitSdkData {
+message InitSdkRegData {
   string udid = 1;
   uint32 channel = 2;
 }
@@ -52,15 +66,82 @@ message InitSdkReply {
 //  string gameName = 3; // 暂不返回，因为要单独拿数据
 }
 
-//////确认登录//////
+//////用户名注册:sdk.user.reg//////
 
-message CheckEnterReq {
-  uint32 appId = 1;
-  string data = 2;
-  string sign = 3;
+message RegReq {
+  string service = 1;
+  uint32 appId = 2;
+  RegReqData data = 3;
+  string sign = 4;
 }
 
-//message CheckEnterReply {
-//  string data = 1;
-//  string state = 2;
-//}
+message RegReqData {
+  string username = 1;
+  string passwd = 2;
+  string udid = 3;
+  uint32 channel = 4;
+}
+
+message RegReply {
+  uint32 code = 1;
+  string msg = 2;
+  RegReplyData data = 3;
+}
+
+message RegReplyData {
+  string uid = 1;
+}
+
+//////用户名登录:sdk.user.login//////
+
+message LoginReq {
+  string service = 1;
+  uint32 appId = 2;
+  LoginData data = 3;
+  string sign = 4;
+}
+
+message LoginData {
+  string udid = 1;
+  uint32 channel = 2;
+}
+
+message LoginReply {
+  uint32 code = 1;
+  string msg = 2;
+}
+
+//////确认登录（点击进入游戏获取uid）:sdk.game.checkenter//////
+
+message CheckEnterReq {
+  string service = 1;
+  uint32 appId = 2;
+  LoginData data = 3;
+  string sign = 4;
+}
+
+message CheckEnterData {
+  string sid = 1;
+  string username = 2;
+}
+
+message CheckEnterReply {
+  uint32 code = 1;
+  string msg = 2;
+}
+
+//////其他//////
+/*
+手机短信注册sdk.user.mobileReg
+将其他平台账号绑定到当前平台sdk.user.platformLogin
+绑定手机sdk.user.bindMobile
+重置密码sdk.user.updatePwd
+获取手机验证码sdk.user.code
+检测短信验证码sdk.user.checkUserMobileCode
+sdk.info.checkPwd
+第三方平台登录sdk.other.login
+获取支付渠道列表sdk.pay.getPayState
+生成sdk订单并获取订单号sdk.pay.getAppOrder
+第三方平台生成订单并获取订单号sdk.pay.getOtherOrder
+通过订单id查询详情sdk.pay.query
+*/

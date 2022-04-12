@@ -13,4 +13,12 @@ enum ErrorReason {
   OK = 0 [(errors.code) = 200];
   SetActiveRecordFail = 1 [(errors.code) = 500];
   SignNotMatch = 2 [(errors.code) = 403];
+  BanReg = 4 [(errors.code) = 403];
+  RegByUsernameFail = 5 [(errors.code) = 403];
+  BanRegUsername = 6 [(errors.code) = 403];
+  BanRegImei = 7 [(errors.code) = 403];
+  BanRegPackage = 8 [(errors.code) = 403];
+  RegByUsernameInvalidLength = 9 [(errors.code) = 403];
+  RegByUsernameExists = 10 [(errors.code) = 403];
+  GameNotExist = 11 [(errors.code) = 403];
 }

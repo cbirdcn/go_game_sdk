@@ -3,6 +3,7 @@ package data
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	// "fmt"
 	"time"
@@ -130,5 +131,39 @@ func (r *sdkRepo) GetGameInfo(ctx context.Context, appId uint32) (*biz.GameInfo,
 			}
 		}
 	}
-	return nil, errors.New("can't get game info")
+	return &biz.GameInfo{}, errors.New("can't get game info")
+}
+
+// 用户名注册
+func (r *sdkRepo) RegByUsername(ctx context.Context, request *biz.RegReq) (bool, error) {
+	// TODO: 获取ip并到redis确认是否不在黑名单中
+	// 用户名长度判断
+	if len(request.Data.Username) < 6 || len(request.Data.Username) > 50 {
+		return false, biz.ErrorRegByUsernameInvalidLength
+	}
+	// TODO: 屏蔽词筛选
+	// 用户名在黑名单中
+	if hotCheckUsernameInBanList(ctx, r.data.rdb, request.Data.Username) {
+		return false, biz.ErrorBanRegUsername
+	}
+	// 设备是否已注册过
+	if hotCheckImeiInBanList(ctx, r.data.rdb, request.Data.Udid) {
+		return false, biz.ErrorBanRegImei
+	}
+	fmt.Println(hotGetPackageInfoBidBanReg(ctx, r.data.rdb, request.Data.Channel) )
+	// 包是否允许注册
+	if hotGetPackageInfoBidBanReg(ctx, r.data.rdb, request.Data.Channel) == "1" {
+		return false, biz.ErrorBanRegPackage
+	}
+	// TODO: redis没数据时写入redis
+	// 用户名是否已被占用
+	if hotGetUserUidByUsername(ctx, r.data.rdb, request.Data.Username) != "" {
+		return false, biz.ErrorRegByUsernameExists
+	}
+
+	// 从Cache/DB查包信息
+	packageInfo := hotGetPackageInfoBid(ctx, r.data.rdb, request.Data.Channel)
+
+	fmt.Println(packageInfo)
+	return false,nil
 }

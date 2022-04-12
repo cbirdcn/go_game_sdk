@@ -51,7 +51,7 @@ login_key是后台给每个游戏配置的唯一秘钥
 }
 ```
 
-- initSdk
+- sdk.game.initSdk
 下载游戏后首次打开游戏，首先初始化sdk
 将udid、channel、cploginkey、appid，以及签名sign提交到服务器
 根据参数到redis查渠道包信息，判断是否新设备（7天内没有激活记录）
@@ -69,4 +69,19 @@ curl --location --request POST 'http://127.0.0.1:8000/sdk/api/v1/init_sdk'
     },
     "sign": "ad4522e0fcad8c671d679e0e19c75968"
 }'
+```
+
+- sdk.user.reg
+```go
+{
+  "service": "sdk.user.reg",
+  "appId": 1000000,
+  "data": {
+    "username": "Hello",
+    "passwd": "Hello",
+    "udid": "12-34-56-78-9100",
+    "channel": 1000001
+  },
+  "sign": "a58154b890baf0022b36f089263b9312"
+}
 ```

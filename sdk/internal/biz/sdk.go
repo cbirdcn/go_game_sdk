@@ -11,6 +11,7 @@ type SdkRepo interface {
 	GetPackageInfo(ctx context.Context, request *InitSdkReq) (*PackageInfo, error)
 	SetActiveRecord(ctx context.Context, request *InitSdkReq) (bool, error)
 	GetGameInfo(ctx context.Context, appId uint32) (*GameInfo, error)
+	RegByUsername(ctx context.Context, request *RegReq) (bool, error)
 }
 
 // useCase，在service中注入后，可以调用useCase的方法
@@ -36,4 +37,8 @@ func (uc *SdkUsecase) SetActiveRecord(ctx context.Context, request *InitSdkReq) 
 
 func (uc *SdkUsecase) GetGameData(ctx context.Context, appId uint32) (*GameInfo, error) {
 	return uc.repo.GetGameInfo(ctx, appId)
+}
+
+func (uc *SdkUsecase) RegByUsername(ctx context.Context, request *RegReq) (bool, error) {
+	return uc.repo.RegByUsername(ctx, request)
 }

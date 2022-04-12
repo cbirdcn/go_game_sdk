@@ -37,3 +37,75 @@ func IsSignNotMatch(err error) bool {
 func ErrorSignNotMatch(format string, args ...interface{}) *errors.Error {
 	return errors.New(403, ErrorReason_SignNotMatch.String(), fmt.Sprintf(format, args...))
 }
+
+func IsBanReg(err error) bool {
+	e := errors.FromError(err)
+	return e.Reason == ErrorReason_BanReg.String() && e.Code == 403
+}
+
+func ErrorBanReg(format string, args ...interface{}) *errors.Error {
+	return errors.New(403, ErrorReason_BanReg.String(), fmt.Sprintf(format, args...))
+}
+
+func IsRegByUsernameFail(err error) bool {
+	e := errors.FromError(err)
+	return e.Reason == ErrorReason_RegByUsernameFail.String() && e.Code == 403
+}
+
+func ErrorRegByUsernameFail(format string, args ...interface{}) *errors.Error {
+	return errors.New(403, ErrorReason_RegByUsernameFail.String(), fmt.Sprintf(format, args...))
+}
+
+func IsBanRegUsername(err error) bool {
+	e := errors.FromError(err)
+	return e.Reason == ErrorReason_BanRegUsername.String() && e.Code == 403
+}
+
+func ErrorBanRegUsername(format string, args ...interface{}) *errors.Error {
+	return errors.New(403, ErrorReason_BanRegUsername.String(), fmt.Sprintf(format, args...))
+}
+
+func IsBanRegImei(err error) bool {
+	e := errors.FromError(err)
+	return e.Reason == ErrorReason_BanRegImei.String() && e.Code == 403
+}
+
+func ErrorBanRegImei(format string, args ...interface{}) *errors.Error {
+	return errors.New(403, ErrorReason_BanRegImei.String(), fmt.Sprintf(format, args...))
+}
+
+func IsBanRegPackage(err error) bool {
+	e := errors.FromError(err)
+	return e.Reason == ErrorReason_BanRegPackage.String() && e.Code == 403
+}
+
+func ErrorBanRegPackage(format string, args ...interface{}) *errors.Error {
+	return errors.New(403, ErrorReason_BanRegPackage.String(), fmt.Sprintf(format, args...))
+}
+
+func IsRegByUsernameInvalidLength(err error) bool {
+	e := errors.FromError(err)
+	return e.Reason == ErrorReason_RegByUsernameInvalidLength.String() && e.Code == 403
+}
+
+func ErrorRegByUsernameInvalidLength(format string, args ...interface{}) *errors.Error {
+	return errors.New(403, ErrorReason_RegByUsernameInvalidLength.String(), fmt.Sprintf(format, args...))
+}
+
+func IsRegByUsernameExists(err error) bool {
+	e := errors.FromError(err)
+	return e.Reason == ErrorReason_RegByUsernameExists.String() && e.Code == 403
+}
+
+func ErrorRegByUsernameExists(format string, args ...interface{}) *errors.Error {
+	return errors.New(403, ErrorReason_RegByUsernameExists.String(), fmt.Sprintf(format, args...))
+}
+
+func IsGameNotExist(err error) bool {
+	e := errors.FromError(err)
+	return e.Reason == ErrorReason_GameNotExist.String() && e.Code == 403
+}
+
+func ErrorGameNotExist(format string, args ...interface{}) *errors.Error {
+	return errors.New(403, ErrorReason_GameNotExist.String(), fmt.Sprintf(format, args...))
+}

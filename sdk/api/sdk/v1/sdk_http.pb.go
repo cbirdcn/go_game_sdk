@@ -20,12 +20,16 @@ const _ = http.SupportPackageIsVersion1
 type SdkHTTPServer interface {
 	CheckEnter(context.Context, *CheckEnterReq) (*CommonReply, error)
 	InitSdk(context.Context, *InitSdkReq) (*InitSdkReply, error)
+	Login(context.Context, *LoginReq) (*LoginReply, error)
+	Reg(context.Context, *RegReq) (*RegReply, error)
 }
 
 func RegisterSdkHTTPServer(s *http.Server, srv SdkHTTPServer) {
 	r := s.Route("/")
 	r.POST("/sdk/api/v1/init_sdk", _Sdk_InitSdk0_HTTP_Handler(srv))
-	r.POST("/sdk/check_enter", _Sdk_CheckEnter0_HTTP_Handler(srv))
+	r.POST("/sdk/api/v1/reg", _Sdk_Reg0_HTTP_Handler(srv))
+	r.POST("/sdk/api/v1/login", _Sdk_Login0_HTTP_Handler(srv))
+	r.POST("/sdk/api/v1/check_enter", _Sdk_CheckEnter0_HTTP_Handler(srv))
 }
 
 func _Sdk_InitSdk0_HTTP_Handler(srv SdkHTTPServer) func(ctx http.Context) error {
@@ -43,6 +47,44 @@ func _Sdk_InitSdk0_HTTP_Handler(srv SdkHTTPServer) func(ctx http.Context) error 
 			return err
 		}
 		reply := out.(*InitSdkReply)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _Sdk_Reg0_HTTP_Handler(srv SdkHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in RegReq
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, "/sdk.v1.Sdk/Reg")
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.Reg(ctx, req.(*RegReq))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*RegReply)
+		return ctx.Result(200, reply)
+	}
+}
+
+func _Sdk_Login0_HTTP_Handler(srv SdkHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in LoginReq
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, "/sdk.v1.Sdk/Login")
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.Login(ctx, req.(*LoginReq))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*LoginReply)
 		return ctx.Result(200, reply)
 	}
 }
@@ -69,6 +111,8 @@ func _Sdk_CheckEnter0_HTTP_Handler(srv SdkHTTPServer) func(ctx http.Context) err
 type SdkHTTPClient interface {
 	CheckEnter(ctx context.Context, req *CheckEnterReq, opts ...http.CallOption) (rsp *CommonReply, err error)
 	InitSdk(ctx context.Context, req *InitSdkReq, opts ...http.CallOption) (rsp *InitSdkReply, err error)
+	Login(ctx context.Context, req *LoginReq, opts ...http.CallOption) (rsp *LoginReply, err error)
+	Reg(ctx context.Context, req *RegReq, opts ...http.CallOption) (rsp *RegReply, err error)
 }
 
 type SdkHTTPClientImpl struct {
@@ -81,7 +125,7 @@ func NewSdkHTTPClient(client *http.Client) SdkHTTPClient {
 
 func (c *SdkHTTPClientImpl) CheckEnter(ctx context.Context, in *CheckEnterReq, opts ...http.CallOption) (*CommonReply, error) {
 	var out CommonReply
-	pattern := "/sdk/check_enter"
+	pattern := "/sdk/api/v1/check_enter"
 	path := binding.EncodeURL(pattern, in, false)
 	opts = append(opts, http.Operation("/sdk.v1.Sdk/CheckEnter"))
 	opts = append(opts, http.PathTemplate(pattern))
@@ -97,6 +141,32 @@ func (c *SdkHTTPClientImpl) InitSdk(ctx context.Context, in *InitSdkReq, opts ..
 	pattern := "/sdk/api/v1/init_sdk"
 	path := binding.EncodeURL(pattern, in, false)
 	opts = append(opts, http.Operation("/sdk.v1.Sdk/InitSdk"))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, err
+}
+
+func (c *SdkHTTPClientImpl) Login(ctx context.Context, in *LoginReq, opts ...http.CallOption) (*LoginReply, error) {
+	var out LoginReply
+	pattern := "/sdk/api/v1/login"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation("/sdk.v1.Sdk/Login"))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, err
+}
+
+func (c *SdkHTTPClientImpl) Reg(ctx context.Context, in *RegReq, opts ...http.CallOption) (*RegReply, error) {
+	var out RegReply
+	pattern := "/sdk/api/v1/reg"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation("/sdk.v1.Sdk/Reg"))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
 	if err != nil {

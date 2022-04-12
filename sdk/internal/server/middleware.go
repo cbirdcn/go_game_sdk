@@ -11,6 +11,7 @@ import (
 	"sort"
 	"strconv"
 
+	"sdk/internal/biz"
 	"sdk/internal/service"
 
 	"github.com/go-kratos/kratos/v2/middleware"
@@ -23,7 +24,9 @@ func MiddlewareCheckSign(sdk *service.SdkService) middleware.Middleware {
 			if _, ok := transport.FromServerContext(ctx); ok {
 				// Do something on entering
 				// 中间件验证签名
-				if !CheckSign(ctx, req, sdk) {
+				if signMatchStatus, err := CheckSign(ctx, req, sdk); err != nil {
+					return nil, err
+				} else if signMatchStatus == false {
 					return nil, v1.ErrorSignNotMatch("sign not match")
 				}
 
@@ -41,19 +44,20 @@ func MiddlewareCheckSign(sdk *service.SdkService) middleware.Middleware {
 // service_name可以是sdk.game.initsdk或其他
 // data字符串结构：url.QueryEscape(param1=a&param2=b)
 // login_key是后台给每个游戏配置的唯一秘钥
-func CheckSign(ctx context.Context, req interface{}, sdk *service.SdkService) bool {
+func CheckSign(ctx context.Context, req interface{}, sdk *service.SdkService) (bool, error) {
 	// 将interface的参数转成map
 	reqJson, _ := json.Marshal(req)
 	var reqMap map[string]interface{}
 	json.Unmarshal([]byte(reqJson), &reqMap)
 
 	dataStr := HttpBuildQuery(reqMap)
-	makeSign := MakeSign(ctx, reqMap, dataStr, sdk)
+	makeSign, err := MakeSign(ctx, reqMap, dataStr, sdk)
+	fmt.Println(makeSign)
 
 	if fmt.Sprintf("%v", reqMap["sign"]) == makeSign {
-		return true
+		return true, nil
 	}
-	return false
+	return false, err
 }
 
 // data参数拼接：url.QueryEscape(param1=a&param2=b)
@@ -97,7 +101,7 @@ func HttpBuildQuery(reqMap map[string]interface{}) string {
 //   },
 //   "sign": "ad4522e0fcad8c671d679e0e19c75968"
 // }
-func MakeSign(ctx context.Context, reqMap map[string]interface{}, dataStr string, sdk *service.SdkService) (signStr string) {
+func MakeSign(ctx context.Context, reqMap map[string]interface{}, dataStr string, sdk *service.SdkService) (signStr string, err error) {
 	// uint32参数会被req转成float64
 	signStr += fmt.Sprintf("%s", strconv.FormatFloat(reqMap["appId"].(float64), 'f', -1, 64))
 	signStr += fmt.Sprintf("%s", reqMap["service"])
@@ -106,13 +110,18 @@ func MakeSign(ctx context.Context, reqMap map[string]interface{}, dataStr string
 	cpLoginKey, err := GetLoginKey(ctx, reqMap, sdk)
 
 	if err != nil {
-		panic("game unavailable.")
+		return "", biz.ErrorGameNotExist
 	}
 	signStr += cpLoginKey
-	return fmt.Sprintf("%x", md5.Sum([]byte(signStr)))
+	return fmt.Sprintf("%x", md5.Sum([]byte(signStr))), nil
 }
 
 func GetLoginKey(ctx context.Context, reqMap map[string]interface{}, sdk *service.SdkService) (string, error) {
 	res, err := sdk.GetGameInfo(ctx, uint32(reqMap["appId"].(float64)))
-	return res.CpLoginKey, err
+	if err == nil {
+		return res.CpLoginKey, err
+	} else {
+		return "", err
+	}
+	
 }
